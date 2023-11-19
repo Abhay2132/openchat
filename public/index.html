@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OPEN CHAT</title>
+    <link rel="stylesheet" href="./styles/commons.css" />
+    <script type="module" src="./js/main.js" async></script>
+</head>
+<body>
+    <nav>
+        <h1>OPEN CHAT</h1>
+    </nav>
+</body>
+<script>
+    (() => {
+        function setH() {
+            let h = window.innerHeight + "px";
+            document.documentElement.style.setProperty("--innerH", h);
+        }
+        if(typeof window == "undefined") return;
+        requestAnimationFrame(setH)
+        // window.onresize = setH;
+        window.addEventListener("resize", setH);
+  		
+    })();
+</script>
+</html>
