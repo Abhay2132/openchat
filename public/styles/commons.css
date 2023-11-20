@@ -2,7 +2,16 @@ body {
     margin: 0;
 }
 
+nav{
+
+    display: flex;
+}
+
 nav h1 {
     margin : 0;
     padding: 10px 20px;
+}
+
+nav #user-count-box {
+    margin-left: auto;
 }

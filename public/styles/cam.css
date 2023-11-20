@@ -1,0 +1,12 @@
+#cam{
+   height: 80vh;
+   border-radius: 10px;
+   background-color: #333;
+   transform: scaleX(-1);
+}
+
+#cam-box{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

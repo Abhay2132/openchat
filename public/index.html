@@ -5,12 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OPEN CHAT</title>
     <link rel="stylesheet" href="./styles/commons.css" />
+    <link rel="stylesheet" href="./styles/cam.css" />
     <script type="module" src="./js/main.js" async></script>
+
 </head>
+
 <body>
     <nav>
         <h1>OPEN CHAT</h1>
+        <div id="user-count-box">ONLINE : <span id="user-count">1</span></div>
     </nav>
+    <div id="cam-box">
+    <video src="" id="cam"></video>
+    </div>
 </body>
 <script>
     (() => {
@@ -25,4 +32,6 @@
   		
     })();
 </script>
+<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script src="js/socket.js"></script>
 </html>
