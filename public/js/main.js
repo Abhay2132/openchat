@@ -4,10 +4,15 @@ const local = $("#local");
 const remote = $("#remote");
 
 const socket = io();
+socket.on("reload", () => window.location = window.location);
 
 var myPeerConn = false;
 var targetID = false;
 var localStream = false;
+var mediaConstraints = {
+	audio: false,
+	video: true
+}
 
 socket.on("user-count", ({ count = 0 }) => {
 	const count_target = $("#user-count");
@@ -17,7 +22,7 @@ socket.on("user-count", ({ count = 0 }) => {
 socket.on("log", console.log);
 
 async function invite() {
-	// let localStream = await getLocalVideoStream();
+	console.log("starting invite")
 	if (myPeerConn) return alert("Already in a call !");
 	createPeerConn();
 	localStream
@@ -45,6 +50,7 @@ function createPeerConn() {
 }
 
 async function handleNegotiationNeededEvent() {
+	console.log("sending video offer")
 	const offer = await myPeerConn.createOffer();
 	myPeerConn.setLocalDescription(offer).then(() => {
 		sendToServer("video-offer", { sdp: myPeerConn.localDescription });
@@ -52,20 +58,17 @@ async function handleNegotiationNeededEvent() {
 }
 
 function handleVideoOfferMsg(msg) {
-	targetID = msg.name;
 	createPeerConn();
 
 	const desc = new RTCSessionDescription(msg.sdp);
 
 	myPeerConn
 		.setRemoteDescription(desc)
+		// .then(function () {
+		// 	return getLocalVideoStream();
+		// })
 		.then(function () {
-			return navigator.mediaDevices.getUserMedia(mediaConstraints);
-		})
-		.then(function (stream) {
-			src = stream;
-			local.srcObject = src;
-			src.getTracks().forEach((track) => myPeerConn.addTrack(track, src));
+			localStream.getTracks().forEach((track) => myPeerConn.addTrack(track, localStream));
 		})
 		.then(function () {
 			return myPeerConn.createAnswer();
@@ -74,7 +77,7 @@ function handleVideoOfferMsg(msg) {
 			return myPeerConn.setLocalDescription(answer);
 		})
 		.then(function () {
-			sendToServer("video-answer", targetID, {
+			sendToServer("video-answer", {
 				sdp: myPeerConn.localDescription,
 			});
 		});
@@ -87,7 +90,7 @@ function handleVideoAnswer(ans) {
 
 function handleICECandidateEvent(event) {
 	if (event.candidate) {
-		sendToServer("new-ice-candidate", {candidate: event.candidate});
+		sendToServer("new-ice-candidate", { candidate: event.candidate });
 	}
 }
 
@@ -101,29 +104,41 @@ function sendToServer(type, payload) {
 }
 
 function handleTrackEvent(event) {
-	remote.srcObject = event.streams[0];
+	console.log("TRACK RECEIVED")
+	// remote.srcObject = event.streams;
+	// remote.play();
+	console.log(event);
+	let stream = event.streams[0];
+	if ("srcObject" in remote) {
+		remote.srcObject = stream;
+	} else {
+		remote.src = window.URL.createObjectURL(stream);
+	}
+	remote.onloadedmetadata = function (e) {
+		remote.play();
+	};
 }
 
 function closeVideoCall() {
 	// const remote = document.getElementById("received_video");
 	// const local = document.getElementById("local_video");
 
-	if (myPeerConnection) {
-		myPeerConnection.ontrack = null;
-		myPeerConnection.onremovetrack = null;
-		myPeerConnection.onremovestream = null;
-		myPeerConnection.onicecandidate = null;
-		myPeerConnection.oniceconnectionstatechange = null;
-		myPeerConnection.onsignalingstatechange = null;
-		myPeerConnection.onicegatheringstatechange = null;
-		myPeerConnection.onnegotiationneeded = null;
+	if (myPeerConn) {
+		myPeerConn.ontrack = null;
+		myPeerConn.onremovetrack = null;
+		myPeerConn.onremovestream = null;
+		myPeerConn.onicecandidate = null;
+		myPeerConn.oniceconnectionstatechange = null;
+		myPeerConn.onsignalingstatechange = null;
+		myPeerConn.onicegatheringstatechange = null;
+		myPeerConn.onnegotiationneeded = null;
 
 		if (remote.srcObject) {
 			remote.srcObject.getTracks().forEach((track) => track.stop());
 		}
 
-		myPeerConnection.close();
-		myPeerConnection = null;
+		myPeerConn.close();
+		myPeerConn = null;
 	}
 
 	remote.removeAttribute("src");
@@ -135,26 +150,30 @@ socket.on("video-offer", handleVideoOfferMsg);
 socket.on("video-answer", handleVideoAnswer);
 socket.on("new-ice-candidate", handleNewICECandidateMsg);
 socket.on("target-leaved", () => {
+	console.log("TARGET-LEAVED")
 	closeVideoCall();
 	socket.emit("reqest-target");
 });
+
 socket.on("target-found", (data) => {
 	targetID = data.targetID;
-	invite();
+	console.log(data);
+	if (data.task == "offer") invite();
 });
 
 window.addEventListener("load", async () => {
 	localStream = await getLocalVideoStream();
-	var video = document.getElementById("local");
-	if ("srcObject" in video) {
-		video.srcObject = localStream;
+	// var local = document.getElementById("local");
+	if ("srcObject" in local) {
+		local.srcObject = localStream;
 	} else {
-		video.src = window.URL.createObjectURL(localStream);
+		local.src = window.URL.createObjectURL(localStream);
 	}
-	video.onloadedmetadata = function (e) {
-		video.play();
+	local.onloadedmetadata = function (e) {
+		local.play();
 	};
 
+	console.log("requesting-target")
 	socket.emit("request-target");
 });
 

@@ -16,9 +16,9 @@ const randInt = (min, max) => Math.random() * (max - min) + min;
 const userSockets = new Map();
 
 function getRandomTargetID(myID){
-  let IDs = [...userSockets.keys()].filter(user => userSockets.get(user).socket.client.id != myID || !user.isBusy);
-
-  if(IDs.length < 2) return false;
+  let IDs = [...userSockets.keys()].filter(user => user != myID && !user.isBusy);
+  console.log({IDs,myID})
+  if(IDs.length == 0) return false;
 
   let targetPos = randInt(0,IDs.length);
 
@@ -30,22 +30,21 @@ function getRandomTargetID(myID){
   return targetID;
 }
 
-const waitingUser = {id: false}
-
 io.on('connection', (socket) => {
   userSockets.set(socket.client.id, {isBusy : false, socket});
   
-  io.emit("user-count", {count: io.engine.clientsCount});
+  io.emit("user-count", {count: userSockets.size});
 
   socket.on('disconnect', () => {
     console.log('user disconnected');
-    io.emit("user-count", {count: io.engine.clientsCount});
     userSockets.delete(socket.client.id);
+    io.emit("user-count", {count: userSockets.size});
   });
 
   socket.on("rtc", ({type, targetID, payload}) => {
+    console.log("RTC", arguments[0])
     if(!userSockets.has(targetID)) return socket.emit("rtc-error", {type:"target404"});
-    userSockets.get(targetID).emit(type, payload);
+    userSockets.get(targetID).socket.emit(type, payload);
   })
 
   console.log("new User :", socket.client.id)
@@ -54,16 +53,24 @@ io.on('connection', (socket) => {
     userSockets.get(myID).isBusy = false;
 
     let targetID = getRandomTargetID(myID);
+    
+    console.log({targetID, myID}, "on request-target");
     if(!targetID) return;
 
     userSockets.get(myID).isBusy = true;
     userSockets.get(targetID).isBusy = true;
 
+    targetSocket = userSockets.get(targetID).socket;
     socket.emit("target-found", {targetID, task:"offer"})
-    userSockets.get(targetID).socket.emit("target-found", {targetID: myID, task:"answer"} )
+    targetSocket.emit("target-found", {targetID: myID, task:"answer"} )
+
+    targetSocket.on("disconnect", function emitTargetLeaved(){
+      socket.emit("target-leaved");
+      // targetSocket.removeListener("disconnect", emitTargetLeaved);
+    })
   })
   
-  socket.emit("log", {message : "HELLO"});
+  socket.emit("log", {myID:socket.client.id});
 
 });
 
