@@ -16,7 +16,7 @@ const randInt = (min, max) => Math.random() * (max - min) + min;
 const userSockets = new Map();
 
 function getRandomTargetID(myID){
-  let IDs = [...userSockets.keys()].filter(user => user != myID && !user.isBusy);
+  let IDs = [...userSockets.keys()].filter(user => user != myID || !userSockets.get(user).isBusy);
   console.log({IDs,myID})
   if(IDs.length == 0) return false;
 
