@@ -13,10 +13,10 @@ const options = {
   cert: fs.readFileSync(path.join(__dirname,"server.cert")), 
 }; 
 
-const isProEnv = (process.env.NODE_ENV||"").toLowerCase() == "production";
+const isDev = (process.env.NODE_ENV||"").toLowerCase().trim() !== "production";
 const ws = new EventEmitter();
 const app = express();
-const server = isProEnv ? createServer(app) : https.createServer(options, app);
+const server = !isDev ? createServer(app) : https.createServer(options, app);
 const io = new Server(server);
 
 const randInt = (min, max) => Math.floor(Math.random() * (max - min) + min)
