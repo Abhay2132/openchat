@@ -11,7 +11,7 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server);
 
-const randInt = (min, max) => Math.random() * (max - min) + min;
+const randInt = (min, max) => Math.floor(Math.random() * (max - min) + min)
 
 const userSockets = new Map();
 
@@ -23,6 +23,8 @@ function getRandomTargetID(myID){
   let targetPos = randInt(0,IDs.length);
 
   const targetID = IDs[targetPos]
+  
+  console.log({myID, targetID, targetPos});
   
   userSockets.get(myID).isBusy = true;
   userSockets.get(targetID).isBusy = true;
@@ -79,5 +81,5 @@ app.use(router);
 app.use(express.static(path.join(path.resolve(),'public')))
 
 server.listen(PORT, () => {
-  console.log('server running at http://localhost:3000');
+  console.log('server running at http://localhost:'+PORT);
 });
