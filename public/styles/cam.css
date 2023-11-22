@@ -1,8 +1,10 @@
 #cam{
-   height: 80vh;
+   max-height: 80vh;
    border-radius: 10px;
    background-color: #333;
    transform: scaleX(-1);
+   max-width: 98%;
+   margin: 1%;
 }
 
 #cam-box{

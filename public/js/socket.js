@@ -7,3 +7,7 @@ socket.on("user-count", ({count=0})=>{
     if(!count_target) return;
     count_target.textContent = count;
 })
+
+socket.on("rtc", )
+
+socket.on("log", console.log);
