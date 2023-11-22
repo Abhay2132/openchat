@@ -16,16 +16,24 @@ const randInt = (min, max) => Math.random() * (max - min) + min;
 const userSockets = new Map();
 
 function getRandomTargetID(myID){
-  let IDs = [...userSockets.keys()];
+  let IDs = [...userSockets.keys()].filter(user => userSockets.get(user).socket.client.id != myID || !user.isBusy);
+
   if(IDs.length < 2) return false;
-  const myPos = IDs.indexOf(myID);
+
   let targetPos = randInt(0,IDs.length);
-  if(targetPos == myPos) targetPos = (targetPos + 1) % IDs.length;
-  return IDs.at(targetPos);
+
+  const targetID = IDs.at(targetPos)
+  
+  userSockets.get(myID).isBusy = true;
+  userSockets.get(targetID).isBusy = true;
+
+  return targetID;
 }
 
+const waitingUser = {id: false}
+
 io.on('connection', (socket) => {
-  userSockets.set(socket.client.id, {onCall : false, socket});
+  userSockets.set(socket.client.id, {isBusy : false, socket});
   
   io.emit("user-count", {count: io.engine.clientsCount});
 
@@ -40,8 +48,19 @@ io.on('connection', (socket) => {
     userSockets.get(targetID).emit(type, payload);
   })
 
+  console.log("new User :", socket.client.id)
   socket.on("request-target", ()=>{
-    
+    const {id: myID} = socket.client;
+    userSockets.get(myID).isBusy = false;
+
+    let targetID = getRandomTargetID(myID);
+    if(!targetID) return;
+
+    userSockets.get(myID).isBusy = true;
+    userSockets.get(targetID).isBusy = true;
+
+    socket.emit("target-found", {targetID, task:"offer"})
+    userSockets.get(targetID).socket.emit("target-found", {targetID: myID, task:"answer"} )
   })
   
   socket.emit("log", {message : "HELLO"});

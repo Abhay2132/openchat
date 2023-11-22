@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="./styles/commons.css" />
     <link rel="stylesheet" href="./styles/cam.css" />
     
+    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script type="module" src="./js/main.js" async></script>
 </head>
 
@@ -16,8 +17,8 @@
         <div id="user-count-box">ONLINE : <span id="user-count">1</span></div>
     </nav>
     <div id="cam-box">
-        <video src="" id="remote"></video>
-        <video src="" id="local"></video>
+        <video src="" id="remote" class="large-video"></video>
+        <video src="" id="local" class="small-video"></video>
     </div>
 </body>
 <script>
@@ -33,6 +34,5 @@
   		
     })();
 </script>
-<script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-<script type="module" src="js/socket.js"></script>
+<!-- <script type="module" src="js/socket.js"></script> -->
 </html>

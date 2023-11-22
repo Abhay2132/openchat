@@ -27,6 +27,20 @@ export const Event = {
     }
 }
 
+export async function getLocalVideoStream (){
+    let All_mediaDevices=navigator.mediaDevices
+    if (!All_mediaDevices || !All_mediaDevices.getUserMedia) {
+       console.log("getUserMedia() not supported.");
+       return;
+    }
+    const vidStream = await All_mediaDevices.getUserMedia({
+       audio: false,
+       video: true
+    })
+
+    return vidStream;
+}
+
 function setCameraMirror() {
 	if (facingMode == "user") {
 		local.style.transform = "scaleX(-1)";
@@ -56,3 +70,7 @@ async function setCamera(f = false) {
 		});
 	}
 }
+
+export const $ = q => document.querySelector(q)
+
+export const wait = (n=0) => new Promise(r => setTimeout(r,n));
