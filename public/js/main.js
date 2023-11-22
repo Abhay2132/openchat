@@ -2,6 +2,7 @@ import { getLocalVideoStream, $, wait } from "./util.js";
 
 const local = $("#local");
 const remote = $("#remote");
+let userLeaved= true
 
 const socket = io();
 socket.on("reload", () => window.location = window.location);
@@ -150,16 +151,18 @@ socket.on("video-offer", handleVideoOfferMsg);
 socket.on("video-answer", handleVideoAnswer);
 socket.on("new-ice-candidate", handleNewICECandidateMsg);
 socket.on("target-leaved", () => {
+	userLeaved = true
 	console.log("TARGET-LEAVED")
 	closeVideoCall();
 	socket.emit("reqest-target");
 });
 
 socket.on("target-found", (data) => {
-	if(myPeerConn) return;
+	if(!userLeaved) return;
 	targetID = data.targetID;
 	console.log(data);
 	if (data.task == "offer") invite();
+	userLeaved = false;
 });
 
 window.addEventListener("load", async () => {
