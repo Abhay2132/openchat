@@ -156,6 +156,7 @@ socket.on("target-leaved", () => {
 });
 
 socket.on("target-found", (data) => {
+	if(myPeerConn) return;
 	targetID = data.targetID;
 	console.log(data);
 	if (data.task == "offer") invite();
