@@ -22,7 +22,7 @@ function getRandomTargetID(myID){
 
   let targetPos = randInt(0,IDs.length);
 
-  const targetID = IDs.at(targetPos)
+  const targetID = IDs[targetPos]
   
   userSockets.get(myID).isBusy = true;
   userSockets.get(targetID).isBusy = true;
