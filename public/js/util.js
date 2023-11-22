@@ -29,11 +29,14 @@ export const Event = {
 
 export async function getLocalVideoStream (){
     let All_mediaDevices=navigator.mediaDevices
+    
+    let vidStream = false
     if (!All_mediaDevices || !All_mediaDevices.getUserMedia) {
        console.log("getUserMedia() not supported.");
        return;
     }
-    const vidStream = await All_mediaDevices.getUserMedia({
+    while(!vidStream)
+    vidStream = await All_mediaDevices.getUserMedia({
        audio: false,
        video: true
     })

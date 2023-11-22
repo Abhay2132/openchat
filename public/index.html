@@ -20,6 +20,10 @@
         <video src="" id="remote" class="large-video" autoplay></video>
         <video src="" id="local" class="small-video" autoplay></video>
     </div>
+    <button onclick="document.getElementById('logs').innerHTML = ''; ">Clear </button>
+    <button onclick="fetch('/getUsers').then(r=>r.json()).then(window.log)">Get Users </button>
+    <button onclick="window.newCall()">NEW</button>
+    <div id="logs"></div>
 </body>
 <script>
     (() => {

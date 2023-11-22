@@ -1,3 +1,4 @@
+/*
 .large-video{
 
    height: 80vh;
@@ -19,17 +20,34 @@
    z-index: 999;
 }
 
+
 #cam-box{
     display: flex;
     justify-content: center;
     align-items: center;
-    /* background-color: red; */
     position: relative;
     margin: 0;
-    /* background-color: red; */
     padding: 10px;
 }
-
+*/
 #remote{
-    /* background: orangered; */
+     background: yellowgreen; 
+}
+
+#cam-box {
+	display: flex;
+	justify-content: space-between;
+}
+
+#cam-box video {
+	max-height: 30vh;
+	max-width: 40%;
+	border-radius: 5px;
+}
+
+#logs {
+	font-family: monospace;
+	font-size: 0.7rem;
+	padding: 3px;
+	word-break: break-all;
 }
