@@ -7,6 +7,7 @@ const { Server } = require('socket.io');
 const {EventEmitter} = require("events");
 const fs = require("fs")
 const https = require("https")
+
 console.clear();
 const options = { 
   key: fs.readFileSync(path.join(__dirname,"server.key")), 
@@ -41,21 +42,31 @@ function getRandomTargetID(myID){
 }
 
 const pid = randInt(0,1000);
+const newEntry = socket => ({
+	socket,
+	isBusy :false,
+	targetID:null,
+	myID : socket.client.id,
+	freeTarget(){
+		if(!userSockets.has(this.targetID)) return console.error("no target of targetID `", this.targetID, "` found");
+		this.isBusy = false;
+		const target = userSockets.get(this.targetID)
+		target.targetID = null;
+		target.isBusy = false;
+		target.socket.emit("target-leaved");
+	}
+})
 
 io.on('connection', (socket) => {
+	
+const log = (...args) => socket.emit("log", "[server] "+(args.map(b => typeof(b) == 'object' ? JSON.stringify(b) : b).join(" ")) );
 	socket.emit("reload", {pid});
-  userSockets.set(socket.client.id, {targetID: null, isBusy : false, socket});
+  userSockets.set(socket.client.id, newEntry(socket));
   
   io.emit("user-count", {count: userSockets.size});
 
   socket.on('disconnect', () => {
-	let myTargetID = userSockets.get(socket.client.id).targetID
-	if(myTargetID && userSockets.has(myTargetID)) {
-		let myTarget = userSockets.get(myTargetID)
-		myTarget.socket.emit("target-leaved");
-		myTarget.isBusy = false;
-		myTarget.targetID =null;
-	}
+	userSockets.get(socket.client.id).freeTarget();
     userSockets.delete(socket.client.id);
     io.emit("user-count", {count: userSockets.size});
   });
@@ -70,15 +81,11 @@ io.on('connection', (socket) => {
 
   //console.log("new User :", socket.client.id)
   socket.on("request-target", ()=>{
+	log("request-target by id :", socket.client.id);
     const {id: myID} = socket.client;
     let me = userSockets.get(myID);
-	me.isBusy = false;
-	if(me.targetID && userSockets.has(me.targetID) ) {
-		let target = userSockets.get(me.targetID);
-		target.busy = false;
-		target.targetID = null;
-		target.socket.emit("target-leaved");
-	}
+	me.freeTarget();
+	
     let targetID = getRandomTargetID(myID);
     
     console.log( "request-target",{targetID, myID});
@@ -97,7 +104,7 @@ io.on('connection', (socket) => {
 	
   })
   
-  socket.emit("log", {myID:socket.client.id});
+	log(`id : ${socket.client.id}`);
 
 });
 

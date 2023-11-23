@@ -79,7 +79,7 @@ function handleVideoOfferMsg(msg) {
 		// })
 		.then(function () {
 			try{localStream.getTracks().forEach((track) => myPeerConn.addTrack(track, localStream));
-		} catch (e){ console.error(e, localStream) }
+		} catch (e){ log(e, localStream) }
 })
 		.then(function () {
 			return myPeerConn.createAnswer();
@@ -96,6 +96,7 @@ function handleVideoOfferMsg(msg) {
 }
 
 function handleVideoAnswer(ans) {
+	log("answer received !");
 	const desc = new RTCSessionDescription(ans.sdp);
 	myPeerConn.setRemoteDescription(desc);
 }
@@ -218,5 +219,5 @@ window.newCall = function () {
 	userLeaved = true
 	
 	log("requesting target");
-	socket.emit("reqest-target");
+	socket.emit("request-target");
 }
